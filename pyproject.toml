@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fastapi-runtime-details-collector"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "anyio>=4.0",
+    "prometheus_client>=0.17",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
