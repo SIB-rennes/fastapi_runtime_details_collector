@@ -134,3 +134,26 @@ A ready-to-import dashboard is available in [`grafana/fastapi-runtime-details.js
 4. Pick the `job` label that matches your app's scrape config
 
 The dashboard auto-refreshes every 10 seconds and exposes a `$job` variable to filter by service.
+
+## Alerting
+
+Example Prometheus alert rules are provided in [`prometheus/alerts.yml`](prometheus/alerts.yml).
+
+| Alert | Severity | Condition | For |
+|---|---|---|---|
+| `FastAPIEventLoopLagHigh` | warning | lag > 50 ms | 1 min |
+| `FastAPIEventLoopLagCritical` | critical | lag > 200 ms | 30 s |
+| `FastAPIThreadPoolSaturationHigh` | warning | active / capacity > 80 % | 2 min |
+| `FastAPIThreadPoolSaturationCritical` | critical | active / capacity > 95 % | 1 min |
+
+**Threshold rationale:**
+
+- 50 ms lag is the point where human-perceptible async latency degradation begins; 200 ms indicates serious blocking.
+- 80 % thread pool utilisation leaves a safety margin for bursts; 95 % means the pool is effectively full and requests will queue for a thread.
+
+**Load the rules into Prometheus** by adding the file path under `rule_files` in your `prometheus.yml`:
+
+```yaml
+rule_files:
+  - prometheus/alerts.yml
+```

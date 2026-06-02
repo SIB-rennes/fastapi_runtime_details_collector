@@ -1,0 +1,57 @@
+groups:
+  - name: fastapi-runtime
+    rules:
+
+      # --- Event loop lag ---
+
+      - alert: FastAPIEventLoopLagHigh
+        expr: fastapi_eventloop_lag_seconds > 0.05
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Event loop lag elevated on {{ $labels.job }}/{{ $labels.instance }}"
+          description: >
+            Event loop lag has been above 50 ms for more than 1 minute
+            (current value: {{ $value | humanizeDuration }}).
+            Blocking or CPU-bound work may be starving async handlers.
+
+      - alert: FastAPIEventLoopLagCritical
+        expr: fastapi_eventloop_lag_seconds > 0.2
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Event loop lag critical on {{ $labels.job }}/{{ $labels.instance }}"
+          description: >
+            Event loop lag has been above 200 ms for more than 30 seconds
+            (current value: {{ $value | humanizeDuration }}).
+            The event loop is severely blocked; async request latency is degraded.
+
+      # --- Thread pool saturation ---
+
+      - alert: FastAPIThreadPoolSaturationHigh
+        expr: >
+          fastapi_threadpool_active_threads / fastapi_threadpool_capacity_tokens > 0.8
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Thread pool saturation high on {{ $labels.job }}/{{ $labels.instance }}"
+          description: >
+            Thread pool has been above 80% utilisation for more than 2 minutes
+            (current: {{ $value | humanizePercentage }}).
+            Sync handler requests may start queuing soon.
+
+      - alert: FastAPIThreadPoolSaturationCritical
+        expr: >
+          fastapi_threadpool_active_threads / fastapi_threadpool_capacity_tokens > 0.95
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Thread pool nearly full on {{ $labels.job }}/{{ $labels.instance }}"
+          description: >
+            Thread pool has been above 95% utilisation for more than 1 minute
+            (current: {{ $value | humanizePercentage }}).
+            Sync handler requests are being blocked waiting for a free thread.
