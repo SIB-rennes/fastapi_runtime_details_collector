@@ -114,3 +114,23 @@ async def root():
 ```
 
 Run with `uvicorn main:app` and scrape `http://localhost:8000/metrics`.
+
+## Grafana dashboard
+
+A ready-to-import dashboard is available in [`grafana/fastapi-runtime-details.json`](grafana/fastapi-runtime-details.json).
+
+**Panels:**
+- Event loop lag, pending tasks, active threads, seconds since last collection (stat panels with color thresholds)
+- Event loop lag over time (time series)
+- Pending asyncio tasks over time (time series)
+- Thread pool active vs capacity over time (time series)
+- Thread pool saturation % (gauge)
+
+**Import steps:**
+
+1. In Grafana, go to **Dashboards → Import**
+2. Click **Upload dashboard JSON file** and select `grafana/fastapi-runtime-details.json`
+3. Select your Prometheus data source
+4. Pick the `job` label that matches your app's scrape config
+
+The dashboard auto-refreshes every 10 seconds and exposes a `$job` variable to filter by service.
